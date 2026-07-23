@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
@@ -50,4 +51,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Entreprise::class);
     }
+
+    public function trajets(): HasMany
+{
+    return $this->hasMany(Trajet::class, 'conducteur_id');
+}
+
+public function reservations(): HasMany
+{
+    return $this->hasMany(Reservation::class, 'passager_id');
+}
 }

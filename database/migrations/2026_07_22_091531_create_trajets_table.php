@@ -20,7 +20,7 @@ return new class extends Migration
 
             $table->string('ville_depart');
             $table->string('ville_arrivee');
-            $table->dateTime('horaire');
+           $table->time('horaire');
             $table->unsignedInteger('places_disponibles');
             $table->string('jours_recurrence')->nullable();
 
