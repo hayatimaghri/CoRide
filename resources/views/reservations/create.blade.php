@@ -36,15 +36,16 @@
             @enderror
 
         </div>
+<button
+    type="submit"
+    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+    Réserver
+</button>
 
-        <button class="btn btn-success">
-            Réserver
-        </button>
-
-        <a href="{{ route('reservations.index') }}"
-           class="btn btn-secondary">
-            Retour
-        </a>
+<a href="{{ route('reservations.index') }}"
+   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg ml-2">
+    Retour
+</a>
 
     </form>
 

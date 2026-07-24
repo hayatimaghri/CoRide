@@ -6,6 +6,7 @@ use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
 use App\Models\Trajet;
+use App\Services\AIService;
 
 class ReservationController extends Controller
 {
@@ -34,8 +35,10 @@ class ReservationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreReservationRequest $request)
+    public function store(StoreReservationRequest $request, AIService $ai)
     {
+
+      
         $trajet = Trajet::findOrFail($request->trajet_id);
 
         // Vérifier les places disponibles
@@ -56,12 +59,28 @@ class ReservationController extends Controller
             return back()->with('error', 'Vous avez déjà réservé ce trajet.');
         }
 
-        Reservation::create([
+        // Création de la réservation
+        $reservation = Reservation::create([
             'trajet_id' => $request->trajet_id,
             'passager_id' => auth()->id(),
             'statut' => 'en_attente',
             'date_reservation' => now()->toDateString(),
         ]);
+
+        // Analyse IA (temporaire)
+        $result = $ai->analyseTrajet([
+            'ville_depart' => $trajet->ville_depart,
+            'ville_arrivee' => $trajet->ville_arrivee,
+            'horaire' => $trajet->horaire,
+        ]);
+
+        // Sauvegarde du résultat IA
+       $reservation->update([
+    'compatibility_score' => $result['score'],
+    'ai_result' => $result,
+]);
+
+dd($reservation->fresh()->toArray());
 
         return redirect()
             ->route('reservations.index')

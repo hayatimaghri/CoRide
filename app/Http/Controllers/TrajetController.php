@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreTrajetRequest;
 use App\Http\Requests\UpdateTrajetRequest;
 use App\Models\Trajet;
@@ -97,4 +97,30 @@ class TrajetController extends Controller
             ->route('trajets.index')
             ->with('success', 'Trajet supprimé avec succès.');
     }
+
+    public function mesTrajets()
+{
+    $trajets = Trajet::where('conducteur_id', auth()->id())
+        ->withCount('reservations')
+        ->get();
+
+    return view('trajets.mes', compact('trajets'));
+}
+
+public function recherche(Request $request)
+{
+    $trajets = Trajet::query();
+
+    if ($request->filled('ville_depart')) {
+        $trajets->where('ville_depart', 'like', '%' . $request->ville_depart . '%');
+    }
+
+    if ($request->filled('ville_arrivee')) {
+        $trajets->where('ville_arrivee', 'like', '%' . $request->ville_arrivee . '%');
+    }
+
+   $trajets = $trajets->with(['conducteur', 'reservations'])->get();
+
+    return view('trajets.recherche', compact('trajets'));
+}
 }
