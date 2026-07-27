@@ -6,7 +6,6 @@ use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
 use App\Models\Trajet;
-use App\Services\AIService;
 
 class ReservationController extends Controller
 {
@@ -35,7 +34,7 @@ class ReservationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreReservationRequest $request, AIService $ai)
+    public function store(StoreReservationRequest $request)
     {
 
       
@@ -59,28 +58,21 @@ class ReservationController extends Controller
             return back()->with('error', 'Vous avez déjà réservé ce trajet.');
         }
 
-        // Création de la réservation
+        // Le score IA a déjà été calculé au moment de la recherche du passager
+        // (TrajetController::recherche) : on le persiste ici via le Cast, sans
+        // recalculer côté réservation.
         $reservation = Reservation::create([
             'trajet_id' => $request->trajet_id,
             'passager_id' => auth()->id(),
             'statut' => 'en_attente',
             'date_reservation' => now()->toDateString(),
+            'compatibility_score' => $request->compatibility_score,
+            'ai_result' => [
+                'score' => $request->compatibility_score,
+                'justification' => $request->ai_justification,
+                'horaire_suggere' => $request->ai_horaire_suggere,
+            ],
         ]);
-
-        // Analyse IA (temporaire)
-        $result = $ai->analyseTrajet([
-            'ville_depart' => $trajet->ville_depart,
-            'ville_arrivee' => $trajet->ville_arrivee,
-            'horaire' => $trajet->horaire,
-        ]);
-
-        // Sauvegarde du résultat IA
-       $reservation->update([
-    'compatibility_score' => $result['score'],
-    'ai_result' => $result,
-]);
-
-dd($reservation->fresh()->toArray());
 
         return redirect()
             ->route('reservations.index')
@@ -108,6 +100,24 @@ dd($reservation->fresh()->toArray());
      */
     public function update(UpdateReservationRequest $request, Reservation $reservation)
     {
+        if (! $reservation->peutTransitionerVers($request->statut)) {
+            return back()->with(
+                'error',
+                "Transition de statut non autorisée : {$reservation->statut} → {$request->statut}."
+            );
+        }
+
+        if ($request->statut === 'confirmee') {
+            $placesOccupees = Reservation::where('trajet_id', $reservation->trajet_id)
+                ->where('statut', 'confirmee')
+                ->where('id', '!=', $reservation->id)
+                ->count();
+
+            if ($placesOccupees >= $reservation->trajet->places_disponibles) {
+                return back()->with('error', 'Ce trajet est déjà complet, impossible de confirmer.');
+            }
+        }
+
         $reservation->update([
             'statut' => $request->statut,
         ]);

@@ -1,58 +1,92 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🚗 CoRide
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> Plateforme web de covoiturage destinée aux salariés d'entreprises partenaires.
 
-## About Laravel
+## 📌 Présentation du projet
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**CoRide** est une application web développée pour **MobiliTech**, une startup spécialisée dans la mobilité durable en entreprise.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+L'objectif est de permettre aux employés de différentes entreprises partenaires de :
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- publier des trajets domicile-travail ;
+- rechercher des trajets compatibles avec leur situation ;
+- réserver une place ;
+- suivre leurs réservations ;
+- gérer le statut des réservations ;
+- bénéficier d'un **score de compatibilité basé sur l'IA**.
 
-## Learning Laravel
+Contrairement à un simple filtre SQL par ville ou par horaire, CoRide utilise une brique IA afin de fournir :
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- un score de compatibilité sur 100 ;
+- une justification du score ;
+- un horaire suggéré.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+# 🎯 Objectifs
 
-## Agentic Development
+Le projet répond aux objectifs suivants :
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- Concevoir une base de données relationnelle cohérente.
+- Implémenter une architecture MVC avec Laravel.
+- Sécuriser l'accès avec Laravel Breeze.
+- Gérer les utilisateurs, entreprises, trajets et réservations.
+- Appliquer les règles métier du covoiturage.
+- Intégrer une brique IA avec `laravel/ai`.
+- Stocker le résultat structuré de l'IA grâce à un **Custom Cast**.
+- Fournir une interface Blade simple et ergonomique.
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
-```
+# 👥 Règles métier
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+CoRide respecte les règles suivantes :
 
-## Contributing
+1. Un employé appartient à une seule entreprise.
+2. L'adresse email professionnelle d'un employé est unique.
+3. Un employé peut être :
+   - conducteur ;
+   - passager ;
+   - conducteur et passager.
+4. Un trajet est proposé par un conducteur.
+5. Un trajet contient :
+   - une ville de départ ;
+   - une ville d'arrivée ;
+   - un horaire ;
+   - un nombre de places disponibles ;
+   - des jours de récurrence.
+6. Le nombre de réservations confirmées ne peut pas dépasser le nombre de places disponibles.
+7. Un passager ne peut pas réserver deux fois le même trajet.
+8. Une réservation possède un statut :
+   - `en_attente`
+   - `confirmee`
+   - `refusee`
+   - `annulee`
+9. Les transitions de statut sont contrôlées.
+10. Un trajet avec des réservations confirmées ne peut pas être supprimé.
+11. Le score IA est calculé uniquement lorsqu'un **passager recherche un trajet**.
+12. Le scoring IA n'est jamais calculé côté conducteur.
+13. Les suppressions respectent l'intégrité référentielle.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+# 🤖 Fonctionnalité IA
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+L'une des fonctionnalités principales de CoRide est le **score de compatibilité IA**.
 
-## Security Vulnerabilities
+Lorsqu'un passager recherche un trajet, l'application transmet à l'IA :
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- la ville de résidence du passager ;
+- la ville de départ ;
+- la ville d'arrivée ;
+- l'horaire ;
+- les jours de récurrence.
 
-## License
+L'IA retourne une réponse structurée contenant :
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```json
+{
+    "score": 90,
+    "justification": "Témara et Rabat sont des villes proches...",
+    "horaire_suggere": "08:15:00"
+}

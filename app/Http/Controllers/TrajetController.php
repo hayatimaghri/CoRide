@@ -107,7 +107,7 @@ class TrajetController extends Controller
     return view('trajets.mes', compact('trajets'));
 }
 
-public function recherche(Request $request)
+public function recherche(Request $request, \App\Services\AIService $ai)
 {
     $trajets = Trajet::query();
 
@@ -119,7 +119,21 @@ public function recherche(Request $request)
         $trajets->where('ville_arrivee', 'like', '%' . $request->ville_arrivee . '%');
     }
 
-   $trajets = $trajets->with(['conducteur', 'reservations'])->get();
+    $trajets = $trajets->with(['conducteur', 'reservations'])->get();
+
+    // Le score de compatibilité IA est calculé ici, à la demande du passager
+    // qui cherche un trajet (jamais côté conducteur).
+    $passager = auth()->user();
+
+    foreach ($trajets as $trajet) {
+        $trajet->ai_result = $ai->analyseTrajet([
+            'ville_residence_passager' => $passager->ville_residence,
+            'ville_depart' => $trajet->ville_depart,
+            'ville_arrivee' => $trajet->ville_arrivee,
+            'horaire' => $trajet->horaire,
+            'jours_recurrence' => $trajet->jours_recurrence,
+        ]);
+    }
 
     return view('trajets.recherche', compact('trajets'));
 }

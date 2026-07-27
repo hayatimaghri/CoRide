@@ -1,55 +1,63 @@
-@extends('layouts.app')
+<x-app-layout>
 
-@section('content')
+    <x-slot name="header">
+        <h2 class="text-2xl font-bold text-gray-800">
+            🚗 Détail du trajet
+        </h2>
+    </x-slot>
 
-<div class="container">
+    <div class="py-8">
+        <div class="max-w-xl mx-auto px-6">
 
-    <h1>Détails du trajet</h1>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
 
-    <table class="table table-bordered">
+                <div class="bg-blue-600 text-white px-6 py-4">
+                    <h3 class="text-xl font-bold">
+                        {{ $trajet->ville_depart }} → {{ $trajet->ville_arrivee }}
+                    </h3>
+                </div>
 
-        <tr>
-            <th>ID</th>
-            <td>{{ $trajet->id }}</td>
-        </tr>
+                <div class="p-6 space-y-4">
 
-        <tr>
-            <th>Conducteur</th>
-            <td>{{ $trajet->conducteur->name }}</td>
-        </tr>
+                    <div class="flex justify-between border-b pb-3">
+                        <span class="text-gray-500">ID</span>
+                        <span class="font-medium text-gray-800">#{{ $trajet->id }}</span>
+                    </div>
 
-        <tr>
-            <th>Ville de départ</th>
-            <td>{{ $trajet->ville_depart }}</td>
-        </tr>
+                    <div class="flex justify-between border-b pb-3">
+                        <span class="text-gray-500">Conducteur</span>
+                        <span class="font-medium text-gray-800">{{ $trajet->conducteur->name }}</span>
+                    </div>
 
-        <tr>
-            <th>Ville d'arrivée</th>
-            <td>{{ $trajet->ville_arrivee }}</td>
-        </tr>
+                    <div class="flex justify-between border-b pb-3">
+                        <span class="text-gray-500">Horaire</span>
+                        <span class="font-medium text-gray-800">{{ $trajet->horaire }}</span>
+                    </div>
 
-        <tr>
-            <th>Horaire</th>
-            <td>{{ $trajet->horaire }}</td>
-        </tr>
+                    <div class="flex justify-between border-b pb-3">
+                        <span class="text-gray-500">Places disponibles</span>
+                        <span class="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-sm font-medium">
+                            {{ $trajet->places_disponibles }}
+                        </span>
+                    </div>
 
-        <tr>
-            <th>Places disponibles</th>
-            <td>{{ $trajet->places_disponibles }}</td>
-        </tr>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Jours de récurrence</span>
+                        <span class="font-medium text-gray-800">{{ $trajet->jours_recurrence ?? '—' }}</span>
+                    </div>
 
-        <tr>
-            <th>Jours de récurrence</th>
-            <td>{{ $trajet->jours_recurrence }}</td>
-        </tr>
+                </div>
 
-    </table>
+                <div class="bg-gray-50 px-6 py-4">
+                    <a href="{{ route('trajets.index') }}"
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow transition">
+                        ← Retour à la liste
+                    </a>
+                </div>
 
-    <a href="{{ route('trajets.index') }}"
-       class="btn btn-primary">
-        Retour
-    </a>
+            </div>
 
-</div>
+        </div>
+    </div>
 
-@endsection
+</x-app-layout>

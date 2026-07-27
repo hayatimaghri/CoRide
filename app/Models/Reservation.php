@@ -7,6 +7,30 @@ use App\Casts\AIResultCast;
 
 class Reservation extends Model
 {
+    /**
+     * Transitions de statut autorisées.
+     * Clé = statut actuel, valeur = statuts vers lesquels on peut transitionner.
+     */
+    public const array TRANSITIONS_AUTORISEES = [
+        'en_attente' => ['confirmee', 'refusee', 'annulee'],
+        'confirmee' => ['annulee'],
+        'refusee' => [],
+        'annulee' => [],
+    ];
+
+    /**
+     * Vérifie si la réservation peut passer de son statut actuel
+     * vers le statut donné.
+     */
+    public function peutTransitionerVers(string $nouveauStatut): bool
+    {
+        if ($this->statut === $nouveauStatut) {
+            return true;
+        }
+
+        return in_array($nouveauStatut, self::TRANSITIONS_AUTORISEES[$this->statut] ?? [], true);
+    }
+
     protected $fillable = [
         'trajet_id',
         'passager_id',

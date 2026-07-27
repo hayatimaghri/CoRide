@@ -24,6 +24,9 @@ class StoreReservationRequest extends FormRequest
 {
     return [
         'trajet_id' => 'required|exists:trajets,id',
+        'compatibility_score' => 'nullable|integer|min:0|max:100',
+        'ai_justification' => 'nullable|string',
+        'ai_horaire_suggere' => 'nullable|string',
     ];
 }
 
